@@ -1,0 +1,32 @@
+<header>
+    <div class="d-flex flex-colum flex-md-row align-items-center pb-3 mb-4 border-bottom">
+        <a href="/" class="d-flex align-items-center link-body-emphasis text-decoration-none">
+            <span class="fs-4">Сервис Рассылок</span>
+        </a>
+        <nav class="d-inline-flex mt-2 mt-md-0ms-md-auto">
+            <!--Ссылки для всех-->
+            <a class="me-3 py-2 link-body-emphasis text-decoration-none" href="/">Главная</a>
+
+            <!--Ссылки для авторизованых-->
+            {% if user.is_authenticated %}
+            <a class="me-3 py-2 link-body-emphasis text-decoration-none" href="{% url 'mailings:mailing_list' %}">Мои
+                рассылки</a>
+
+            <a class="me-3 py-2 link-body-emphasis text-decoration-none" href="{% url 'mailings:client_list' %}">Мои
+                клиенты</a>
+
+            <a class="me-3 py-2 link-body-emphasis text-decoration-none" href="{% url 'mailings:message_list' %}">Мои
+                сообщения</a>
+
+            <a class="me-3 py-2 link-body-emphasis text-decoration-none" href="{% url 'user:profile' %}">Профиль</a>
+            <form action="{% url 'users:logout' %}" method="post" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-link py-2 link-body-emphasis text_decoration-none">Выйти</button>
+            </form>
+            {% else %}
+            <a class="me-3 py-2 link-body-emphasis text-decoration-none" href="{% url 'users:login' %}">Войти</a>
+            <a class="py-2 link-body-emphasis text-decoration-none" href="{% url 'users:register' %}">Регистрация</a>
+            {% endif %}
+        </nav>
+    </div>
+</header>
