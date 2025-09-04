@@ -3,19 +3,33 @@ from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, DetailView, UpdateView, DeleteView, ListView
 from .models import Client, Message, Mailing
 from .forms import ClientForm, MessageForm, MailingForm
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
+from django.core.exceptions import PermissionDenied
 
-class OwnerMixin:
+
+class OwnerRequiredMixin(AccessMixin):
     """Миксин для проверки прав пользователя как владельца"""
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        return queryset.filter(owner=self.request.user)
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+
+        # Проверяем, явлется ли пользователь владельцем
+        if obj.owner != request.user:
+            raise PermissionDenied("У вас нет прав доступа.")
+
+        return super().dispatch(request, *args, **kwargs)
+
 
 class ClientListView(LoginRequiredMixin, ListView):
     model = Client
 
-class ClientDetailView(LoginRequiredMixin, OwnerMixin, DetailView):
+    def get_queryset(self):
+        return super().get_queryset().filter(owner=self.request.user)
+
+
+class ClientDetailView(LoginRequiredMixin, OwnerRequiredMixin,  DetailView):
     model = Client
+
 
 class ClientCreateView(LoginRequiredMixin, CreateView):
     model = Client
@@ -26,20 +40,27 @@ class ClientCreateView(LoginRequiredMixin, CreateView):
         form.instance.owner = self.request.user
         return super().form_valid(form)
 
-class ClientUpdateView(LoginRequiredMixin, OwnerMixin, UpdateView):
+
+class ClientUpdateView(LoginRequiredMixin, OwnerRequiredMixin, UpdateView):
     model = Client
     form_class = ClientForm
     success_url = reverse_lazy('mailing:client-list')
 
-class ClientDeleteView(LoginRequiredMixin, OwnerMixin, DeleteView):
+
+class ClientDeleteView(LoginRequiredMixin, OwnerRequiredMixin, DeleteView):
     model = Client
     success_url = reverse_lazy('mailing:client-list')
 
-class MessageListView(LoginRequiredMixin, OwnerMixin, ListView):
+
+# CRUD сообщенией
+
+class MessageListView(LoginRequiredMixin, OwnerRequiredMixin, ListView):
     model = Message
 
-class MessageDetailView(LoginRequiredMixin, OwnerMixin, DetailView):
+
+class MessageDetailView(LoginRequiredMixin, OwnerRequiredMixin, DetailView):
     model = Message
+
 
 class MessageCreateView(LoginRequiredMixin, CreateView):
     model = Message
@@ -50,19 +71,23 @@ class MessageCreateView(LoginRequiredMixin, CreateView):
         form.instance.owner = self.request.user
         return super().form_valid(form)
 
-class MessageUpdateView(LoginRequiredMixin, OwnerMixin, UpdateView):
+
+class MessageUpdateView(LoginRequiredMixin, OwnerRequiredMixin, UpdateView):
     model = Message
     form_class = MessageForm
     success_url = reverse_lazy('mailing:message-list')
 
-class MessageDeleteView(LoginRequiredMixin, OwnerMixin, DeleteView):
+
+class MessageDeleteView(LoginRequiredMixin, OwnerRequiredMixin, DeleteView):
     model = Message
     success_url = reverse_lazy('mailing:message-list')
 
-# <--CRUD рассылок-->
 
-class MailingListView(LoginRequiredMixin, OwnerMixin, ListView):
+# CRUD рассылок
+
+class MailingListView(LoginRequiredMixin, OwnerRequiredMixin, ListView):
     model = Mailing
+
 
 class MailingCreateView(LoginRequiredMixin, CreateView):
     model = Mailing
@@ -73,15 +98,37 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
         form.instance.owner = self.request.user
         return super().form_valid(form)
 
-class MailingDetailView(LoginRequiredMixin, OwnerMixin, DetailView):
+
+class MailingDetailView(LoginRequiredMixin, OwnerRequiredMixin, DetailView):
     model = Mailing
 
-class MailingUpdateView(LoginRequiredMixin, OwnerMixin, UpdateView):
+
+class MailingUpdateView(LoginRequiredMixin, OwnerRequiredMixin, UpdateView):
     model = Mailing
     form_class = MailingForm
     success_url = reverse_lazy('mailing:mailing-list')
 
-class MailingDeleteView(LoginRequiredMixin, OwnerMixin, DeleteView):
+
+class MailingDeleteView(LoginRequiredMixin, OwnerRequiredMixin, DeleteView):
     model = Mailing
     success_url = reverse_lazy('mailing:mailing-list')
 
+def home(request):
+    """Контролер главной страницы, показывает статистику рассылок"""
+    if request.user.is_authenticated:
+        all_mailings = Mailing.objects.filter(owner=request.user)
+        active_mailings_count = all_mailings.count.filter(status='started').count()
+        clients_count = Client.objects.filter(owner=request.user).distinct().count()
+    else:
+        all_mailings = Mailing.objects.none()
+        active_mailings_count = 0
+        clients_count = 0
+
+    context = {
+        'all_mailings_count': all_mailings.count(),
+        'active_mailings_count': active_mailings_count,
+        'clients_count': clients_count,
+        'title': 'Главная страница'
+    }
+
+    return render(request, 'mailing/home.html', context)

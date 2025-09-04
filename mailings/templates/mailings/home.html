@@ -1,0 +1,49 @@
+{% extends 'base.html %}
+
+{% block content %}
+<div class="pricing-header p-3 pb-md-4 mx-auto text-center">
+    <h1 class="display-4 fw-normal">Сервис управления рассылками</h1>
+    <p class="fs-5 text-muted">Добро пожаловать! Здесь вы управляете своими рассылками.</p>
+</div>
+
+{% if user.is_authenticated %}
+    <!-- Карточка статистики -->
+    <div class="row text-center">
+        <div class="col-md-4">
+            <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                    <h4 class="my-0 fw-normal">Всего рассылок</h4>
+                </div>
+                <div class="card-body">
+                    <h1 class="card-title pricing-card-title">{{ all_mailings_count }}</h1>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                    <h4 class="my-0 fw-normal">Активных рассылок</h4>
+                </div>
+                <div class="card-body">
+                    <h1 class="card-title pricing-card-title">{{ active_mailings_count }}</h1>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                    <h4 class="my-0 fw-normal">Уникальных клиентов</h4>
+                </div>
+                <div class="card-body">
+                    <h1 class="card-title pricing-card-title">{{ clients_count }}</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-info text-center">
+        Для начала работы, пожалуйста, <a href="{% url 'users:login' %}">войдите</a> или <a href="{% url 'users:register %}">Зарегистрируйтесь</a>
+    </div>
+{% endif %}
+
+{% endblock %}

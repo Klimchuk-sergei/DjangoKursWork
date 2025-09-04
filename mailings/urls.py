@@ -1,27 +1,31 @@
 from django.urls import path
 from .apps import MailingsConfig
 from .views import (
-    ClientListView, ClientDetailView, ClientCreateView, ClientUpdateView, ClientDeleteView,
+    home, ClientListView, ClientDetailView, ClientCreateView, ClientUpdateView, ClientDeleteView,
     MessageListView, MessageCreateView, MessageDeleteView, MessageUpdateView,MessageDetailView,
     MailingListView, MailingCreateView, MailingDeleteView, MailingDetailView, MailingUpdateView
 )
 
-app_name = MailingsConfig.name
+app_name = 'mailings'
 
 urlpatterns = [
+
+    # Маршрут главной страницы
+    path('', home, name='home'),
+
     # Маршруты для клиентов
-    path('clients/', ClientListView.as_view(), name='client-list'),
-    path('clients/<int:pk>/', ClientDetailView.as_view(), name='client-detail'),
-    path('clients/create/', ClientCreateView.as_view(), name='client-create'),
-    path('clients/update/<int:pk>/', ClientUpdateView.as_view(), name='client-update'),
-    path('clients/delete/<int:pk>/', ClientDeleteView.as_view(), name='client-delete'),
+    path('client/', ClientListView.as_view(), name='client-list'),
+    path('client/<int:pk>/', ClientDetailView.as_view(), name='client-detail'),
+    path('client/create/', ClientCreateView.as_view(), name='client-create'),
+    path('client/update/<int:pk>/', ClientUpdateView.as_view(), name='client-update'),
+    path('client/delete/<int:pk>/', ClientDeleteView.as_view(), name='client-delete'),
 
     # Маршруты для сообщений
-    path('messages/', MessageListView.as_view(), name='message-list'),
-    path('messages/<int:pk>/', MessageDetailView.as_view(), name='message-detail'),
-    path('messages/create/', MessageCreateView.as_view(), name='message-create'),
-    path('messages/delete/<int:pk>/', MessageDeleteView.as_view(), name='message-delete'),
-    path('messages/update/<int:pk>/', MessageUpdateView.as_view(), name='message-update'),
+    path('message/', MessageListView.as_view(), name='message-list'),
+    path('message/<int:pk>/', MessageDetailView.as_view(), name='message-detail'),
+    path('message/create/', MessageCreateView.as_view(), name='message-create'),
+    path('message/delete/<int:pk>/', MessageDeleteView.as_view(), name='message-delete'),
+    path('message/update/<int:pk>/', MessageUpdateView.as_view(), name='message-update'),
 
     #Маршруты для рассылок
     path('mailing/', MailingListView.as_view(), name='mailing-list'),

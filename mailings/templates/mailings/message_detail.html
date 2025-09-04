@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="h2 mb-3">Сообщение: {{ object.subject }}</h1>
+<div class="card">
+    <div class="card-body">
+        <p><strong>Тело письма:</strong></p>
+        <pre><code>{{ object.body }}</code></pre>
+    </div>
+    <div class="card-footer text-end">
+        <a href="{% url 'mailings:message_list' %}" class="btn btn-secondary">Назад к списку</a>
+    </div>
+</div>
+{% endblock %}
