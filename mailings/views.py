@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, UpdateView, DeleteView, ListView
 from .models import Client, Message, Mailing
 from .forms import ClientForm, MessageForm, MailingForm
@@ -34,7 +34,7 @@ class ClientDetailView(LoginRequiredMixin, OwnerRequiredMixin,  DetailView):
 class ClientCreateView(LoginRequiredMixin, CreateView):
     model = Client
     form_class = ClientForm
-    success_url = reverse_lazy('mailing:client-list')
+    success_url = reverse_lazy('mailings:client_list')
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
@@ -44,18 +44,20 @@ class ClientCreateView(LoginRequiredMixin, CreateView):
 class ClientUpdateView(LoginRequiredMixin, OwnerRequiredMixin, UpdateView):
     model = Client
     form_class = ClientForm
-    success_url = reverse_lazy('mailing:client-list')
+    success_url = reverse_lazy('mailings:client_list')
 
 
 class ClientDeleteView(LoginRequiredMixin, OwnerRequiredMixin, DeleteView):
     model = Client
-    success_url = reverse_lazy('mailing:client-list')
+    success_url = reverse_lazy('mailings:client_list')
 
 
 # CRUD сообщенией
 
-class MessageListView(LoginRequiredMixin, OwnerRequiredMixin, ListView):
+class MessageListView(LoginRequiredMixin, ListView):
     model = Message
+    def get_queryset(self):
+        return super().get_queryset().filter(owner=self.request.user)
 
 
 class MessageDetailView(LoginRequiredMixin, OwnerRequiredMixin, DetailView):
@@ -65,7 +67,7 @@ class MessageDetailView(LoginRequiredMixin, OwnerRequiredMixin, DetailView):
 class MessageCreateView(LoginRequiredMixin, CreateView):
     model = Message
     form_class = MessageForm
-    success_url = reverse_lazy('mailing:message-list')
+    success_url = reverse_lazy('mailings:message_list')
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
@@ -75,24 +77,26 @@ class MessageCreateView(LoginRequiredMixin, CreateView):
 class MessageUpdateView(LoginRequiredMixin, OwnerRequiredMixin, UpdateView):
     model = Message
     form_class = MessageForm
-    success_url = reverse_lazy('mailing:message-list')
+    success_url = reverse_lazy('mailings:message_list')
 
 
 class MessageDeleteView(LoginRequiredMixin, OwnerRequiredMixin, DeleteView):
     model = Message
-    success_url = reverse_lazy('mailing:message-list')
+    success_url = reverse_lazy('mailings:message_list')
 
 
 # CRUD рассылок
 
-class MailingListView(LoginRequiredMixin, OwnerRequiredMixin, ListView):
+class MailingListView(LoginRequiredMixin, ListView):
     model = Mailing
+    def get_queryset(self):
+        return super().get_queryset().filter(owner=self.request.user)
 
 
 class MailingCreateView(LoginRequiredMixin, CreateView):
     model = Mailing
     form_class = MailingForm
-    success_url = reverse_lazy('mailing:mailing-list')
+    success_url = reverse_lazy('mailings:mailing_list')
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
@@ -106,18 +110,18 @@ class MailingDetailView(LoginRequiredMixin, OwnerRequiredMixin, DetailView):
 class MailingUpdateView(LoginRequiredMixin, OwnerRequiredMixin, UpdateView):
     model = Mailing
     form_class = MailingForm
-    success_url = reverse_lazy('mailing:mailing-list')
+    success_url = reverse_lazy('mailings:mailing_list')
 
 
 class MailingDeleteView(LoginRequiredMixin, OwnerRequiredMixin, DeleteView):
     model = Mailing
-    success_url = reverse_lazy('mailing:mailing-list')
+    success_url = reverse_lazy('mailings:mailing_list')
 
 def home(request):
     """Контролер главной страницы, показывает статистику рассылок"""
     if request.user.is_authenticated:
         all_mailings = Mailing.objects.filter(owner=request.user)
-        active_mailings_count = all_mailings.count.filter(status='started').count()
+        active_mailings_count = all_mailings.filter(status='started').count()
         clients_count = Client.objects.filter(owner=request.user).distinct().count()
     else:
         all_mailings = Mailing.objects.none()
@@ -131,4 +135,4 @@ def home(request):
         'title': 'Главная страница'
     }
 
-    return render(request, 'mailing/home.html', context)
+    return render(request, 'mailings/home.html', context)

@@ -25,5 +25,5 @@ class MessageForm(StyleFormMixin, forms.ModelForm):
 
 class MailingForm(StyleFormMixin, forms.ModelForm):
     class Meta:
-        model = Message
+        model = Mailing
         exclude = ('owner',)

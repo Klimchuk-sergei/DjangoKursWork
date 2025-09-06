@@ -120,3 +120,13 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.User'
+
+
+# URL для перенаправления после успешного входа
+LOGIN_REDIRECT_URL = '/'
+
+# URL на который будут перенаправляться не зарегистрированные пользователи
+LOGIN_URL = 'users:login'
+
+# URL для перенаправления после входа
+LOGOUT_URL = '/'

@@ -1,9 +1,9 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.contrib.auth.models import AbstractUser
 from .managers import UserManager
 
 
-class User(AbstractBaseUser):
+class User(AbstractUser):
     """убираем стандартное поле ввода username"""
     username = None
     email = models.EmailField(unique=True, verbose_name="Email")
@@ -14,11 +14,11 @@ class User(AbstractBaseUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
-objects = UserManager()
+    objects = UserManager()
 
-class Meta:
-    verbose_name = 'Пользователь'
-    verbose_name_plural = 'Пользователи'
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
 
-def __str__(self):
-    return self.email
+    def __str__(self):
+        return self.email
