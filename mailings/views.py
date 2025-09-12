@@ -39,7 +39,7 @@ class ClientListView(LoginRequiredMixin, ListView):
         return super().get_queryset().filter(owner=self.request.user)
 
 
-class ClientDetailView(LoginRequiredMixin, OwnerRequiredMixin,  DetailView):
+class ClientDetailView(LoginRequiredMixin, OwnerRequiredMixin, DetailView):
     model = Client
 
 
@@ -73,6 +73,7 @@ class ClientDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 class MessageListView(LoginRequiredMixin, ListView):
     model = Message
+
     def get_queryset(self):
         queryset = super().get_queryset()
         user = self.request.user
@@ -112,6 +113,7 @@ class MessageDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 class MailingListView(LoginRequiredMixin, ListView):
     model = Mailing
+
     def get_queryset(self):
         queryset = super().get_queryset()
         user = self.request.user
@@ -145,6 +147,7 @@ class MailingUpdateView(LoginRequiredMixin, UpdateView):
 class MailingDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Mailing
     success_url = reverse_lazy('mailings:mailing_list')
+
 
 def home(request):
     """Контролер главной страницы, показывает статистику рассылок"""

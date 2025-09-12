@@ -3,7 +3,7 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from .views import (
     home, ClientListView, ClientDetailView, ClientCreateView, ClientUpdateView, ClientDeleteView,
-    MessageListView, MessageCreateView, MessageDeleteView, MessageUpdateView,MessageDetailView,
+    MessageListView, MessageCreateView, MessageDeleteView, MessageUpdateView, MessageDetailView,
     MailingListView, MailingCreateView, MailingDeleteView, MailingDetailView, MailingUpdateView,
     MailingSendView, MailingLogListView
 )
@@ -29,7 +29,7 @@ urlpatterns = [
     path('messages/delete/<int:pk>/', MessageDeleteView.as_view(), name='message_delete'),
     path('messages/update/<int:pk>/', MessageUpdateView.as_view(), name='message_update'),
 
-    #Маршруты для рассылок
+    # Маршруты для рассылок
     path('mailings/', MailingListView.as_view(), name='mailing_list'),
     path('mailings/<int:pk>/', MailingDetailView.as_view(), name='mailing_detail'),
     path('mailings/create/', MailingCreateView.as_view(), name='mailing_create'),
