@@ -1,5 +1,6 @@
 from django.urls import path
 from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 from .views import (
     home, ClientListView, ClientDetailView, ClientCreateView, ClientUpdateView, ClientDeleteView,
     MessageListView, MessageCreateView, MessageDeleteView, MessageUpdateView,MessageDetailView,
@@ -12,7 +13,7 @@ app_name = 'mailings'
 urlpatterns = [
 
     # Маршрут главной страницы
-    path('', cache_page(900)(home), name='home'),
+    path('', vary_on_cookie(cache_page(900)(home)), name='home'),
 
     # Маршруты для клиентов
     path('clients/', ClientListView.as_view(), name='client_list'),

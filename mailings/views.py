@@ -6,7 +6,7 @@ from .models import Client, Message, Mailing, MailingLog
 from .forms import ClientForm, MessageForm, MailingForm
 from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
-from services import send_mailing
+from .services import send_mailing
 
 
 class OwnerRequiredMixin(AccessMixin):
@@ -113,7 +113,7 @@ class MessageDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 class MailingListView(LoginRequiredMixin, ListView):
     model = Mailing
     def get_queryset(self):
-        queryset = super().get_queyset()
+        queryset = super().get_queryset()
         user = self.request.user
 
         if user.is_staff or user.is_superuser or user.groups.filter(name='Менеджеры').exists():

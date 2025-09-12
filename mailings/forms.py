@@ -23,7 +23,18 @@ class MessageForm(StyleFormMixin, forms.ModelForm):
         exclude = ('owner',)
 
 
-class MailingForm(StyleFormMixin, forms.ModelForm):
+class MailingForm(forms.ModelForm):
     class Meta:
         model = Mailing
         exclude = ('owner',)
+
+        widgets = {
+            'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            if field_name not in ['clients']:
+                field.widget.attrs['class'] = 'form-control'

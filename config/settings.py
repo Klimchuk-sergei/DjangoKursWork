@@ -149,4 +149,4 @@ LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = 'users:login'
 
 # URL для перенаправления после входа
-LOGOUT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
