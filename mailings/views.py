@@ -1,10 +1,12 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.views import View
 from django.views.generic import CreateView, DetailView, UpdateView, DeleteView, ListView
-from .models import Client, Message, Mailing
+from .models import Client, Message, Mailing, MailingLog
 from .forms import ClientForm, MessageForm, MailingForm
-from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
+from services import send_mailing
 
 
 class OwnerRequiredMixin(AccessMixin):
@@ -12,18 +14,28 @@ class OwnerRequiredMixin(AccessMixin):
 
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()
+        user = request.user
 
         # Проверяем, явлется ли пользователь владельцем
-        if obj.owner != request.user:
-            raise PermissionDenied("У вас нет прав доступа.")
+        if user.is_staff or user.is_superuser or user.groups.filter(name='Менеджеры').exists():
+            return super().dispatch(request, *args, **kwargs)
 
-        return super().dispatch(request, *args, **kwargs)
+        if obj.owner == user:
+            return super().dispatch(request, *args, **kwargs)
+
+        raise PermissionDenied("У вас нет прав для доступа к этому обьекту")
 
 
 class ClientListView(LoginRequiredMixin, ListView):
     model = Client
 
     def get_queryset(self):
+        queryset = super().get_queryset()
+        user = self.request.user
+
+        if user.is_staff or user.is_superuser or user.groups.filter(name='Менеджеры').exists():
+            return queryset
+
         return super().get_queryset().filter(owner=self.request.user)
 
 
@@ -41,15 +53,20 @@ class ClientCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class ClientUpdateView(LoginRequiredMixin, OwnerRequiredMixin, UpdateView):
+class ClientUpdateView(LoginRequiredMixin, UpdateView):
     model = Client
     form_class = ClientForm
     success_url = reverse_lazy('mailings:client_list')
 
 
-class ClientDeleteView(LoginRequiredMixin, OwnerRequiredMixin, DeleteView):
+class ClientDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Client
     success_url = reverse_lazy('mailings:client_list')
+
+    def test_func(self):
+        obj = self.get_object()
+        user = self.request.user
+        return obj.owner == user or user.has_perm('auth.delete_client')
 
 
 # CRUD сообщенией
@@ -57,6 +74,12 @@ class ClientDeleteView(LoginRequiredMixin, OwnerRequiredMixin, DeleteView):
 class MessageListView(LoginRequiredMixin, ListView):
     model = Message
     def get_queryset(self):
+        queryset = super().get_queryset()
+        user = self.request.user
+
+        if user.is_staff or user.is_superuser or user.groups.filter(name='Менеджеры').exists():
+            return queryset
+
         return super().get_queryset().filter(owner=self.request.user)
 
 
@@ -74,13 +97,13 @@ class MessageCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class MessageUpdateView(LoginRequiredMixin, OwnerRequiredMixin, UpdateView):
+class MessageUpdateView(LoginRequiredMixin, UpdateView):
     model = Message
     form_class = MessageForm
     success_url = reverse_lazy('mailings:message_list')
 
 
-class MessageDeleteView(LoginRequiredMixin, OwnerRequiredMixin, DeleteView):
+class MessageDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Message
     success_url = reverse_lazy('mailings:message_list')
 
@@ -90,6 +113,12 @@ class MessageDeleteView(LoginRequiredMixin, OwnerRequiredMixin, DeleteView):
 class MailingListView(LoginRequiredMixin, ListView):
     model = Mailing
     def get_queryset(self):
+        queryset = super().get_queyset()
+        user = self.request.user
+
+        if user.is_staff or user.is_superuser or user.groups.filter(name='Менеджеры').exists():
+            return queryset
+
         return super().get_queryset().filter(owner=self.request.user)
 
 
@@ -107,13 +136,13 @@ class MailingDetailView(LoginRequiredMixin, OwnerRequiredMixin, DetailView):
     model = Mailing
 
 
-class MailingUpdateView(LoginRequiredMixin, OwnerRequiredMixin, UpdateView):
+class MailingUpdateView(LoginRequiredMixin, UpdateView):
     model = Mailing
     form_class = MailingForm
     success_url = reverse_lazy('mailings:mailing_list')
 
 
-class MailingDeleteView(LoginRequiredMixin, OwnerRequiredMixin, DeleteView):
+class MailingDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Mailing
     success_url = reverse_lazy('mailings:mailing_list')
 
@@ -136,3 +165,50 @@ def home(request):
     }
 
     return render(request, 'mailings/home.html', context)
+
+
+class MailingSendView(LoginRequiredMixin, View):
+    """
+    Контроллер для ручной отправки рассылки.
+    """
+
+    def get(self, request, pk):
+        # Получаем объект рассылки или возвращаем 404
+        mailing = get_object_or_404(Mailing, pk=pk)
+
+        # Проверяем, что текущий пользователь является владельцем
+        if mailing.owner == request.user:
+            # Вызываем нашу сервисную функцию
+            send_mailing(mailing)
+
+        # Перенаправляем пользователя обратно на детальную страницу рассылки
+        return redirect('mailings:mailing_detail', pk=pk)
+
+
+class MailingLogListView(LoginRequiredMixin, ListView):
+    """
+    Контроллер для просмотра логов по рассылке.
+    """
+    model = MailingLog
+    template_name = 'mailings/mailing_logs.html'
+    context_object_name = 'logs'
+
+    def get_queryset(self):
+        """
+        Фильтруем логи, чтобы показать только те, которые относятся
+        к рассылке с pk из URL и принадлежат текущему пользователю.
+        """
+
+        queryset = super().get_queryset().filter(mailing__owner=self.request.user)
+        mailing_pk = self.kwargs.get('pk')
+        return queryset.filter(mailing__pk=mailing_pk)
+
+    def get_context_data(self, **kwargs):
+        """
+        Добавляем в контекст саму рассылку для вывода заголовка.
+        """
+        context = super().get_context_data(**kwargs)
+        mailing_pk = self.kwargs.get('pk')
+        context['mailing'] = get_object_or_404(Mailing, pk=mailing_pk)
+        context['title'] = f"Отчет по рассылке: {context['mailing'].message.subject}"
+        return context

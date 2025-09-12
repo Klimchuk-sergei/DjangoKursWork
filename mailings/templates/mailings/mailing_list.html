@@ -16,8 +16,11 @@
                 <td>{{ object.end_time|date:"d.m.Y H:i" }}</td>
                 <td>
                     <a href="{% url 'mailings:mailing_detail' object.pk %}" class="btn btn-sm btn-info">Просмотр</a>
-                    <a href="{% url 'mailings:mailing_update' object.pk %}" class="btn btn-sm btn-warning">Изменить</a>
-                    <a href="{% url 'mailings:mailing_delete' object.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+                    {% if object.owner == user %}
+                        <a href="{% url 'mailings:mailing_update' object.pk %}" class="btn btn-sm btn-warning">Изменить</a>
+                        <a href="{% url 'mailings:mailing_delete' object.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+                        <a href="{% url 'mailings:mailing_logs' object.pk %}" class="btn btn-sm btn-outline-info">Отчет</a>
+                    {% endif %}
                 </td>
             </tr>
             {% empty %}

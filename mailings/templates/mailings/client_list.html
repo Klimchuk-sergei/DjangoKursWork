@@ -15,8 +15,10 @@
                 <td>{{ object.comment|truncatechars:30 }}</td>
                 <td>
                     <a href="{% url 'mailings:client_detail' object.pk %}" class="btn btn-sm btn-info">Просмотр</a>
-                    <a href="{% url 'mailings:client_update' object.pk %}" class="btn btn-sm btn-warning">Изменить</a>
-                    <a href="{% url 'mailings:client_delete' object.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+                    {% if object.owner == user %}
+                        <a href="{% url 'mailings:client_update' object.pk %}" class="btn btn-sm btn-warning">Изменить</a>
+                        <a href="{% url 'mailings:client_delete' object.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+                    {% endif %}
                 </td>
             </tr>
             {% empty %}

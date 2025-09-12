@@ -99,6 +99,12 @@ class Mailing(models.Model):
         verbose_name = 'Рассылка'
         verbose_name_plural = 'Рассылки'
 
+        # блок с правами доступа
+        permissions = [(
+            'can_disable_mailing',
+            'Может отключать рассылки'
+        )]
+
     def __str__(self):
         return f"Рассылка '{self.message.subject}' в {self.start_time}"
 
