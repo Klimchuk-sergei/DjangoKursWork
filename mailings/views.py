@@ -171,20 +171,10 @@ def home(request):
 
 
 class MailingSendView(LoginRequiredMixin, View):
-    """
-    Контроллер для ручной отправки рассылки.
-    """
-
     def get(self, request, pk):
-        # Получаем объект рассылки или возвращаем 404
         mailing = get_object_or_404(Mailing, pk=pk)
-
-        # Проверяем, что текущий пользователь является владельцем
-        if mailing.owner == request.user:
-            # Вызываем нашу сервисную функцию
+        if mailing.owner == request.user or request.user.is_staff:
             send_mailing(mailing)
-
-        # Перенаправляем пользователя обратно на детальную страницу рассылки
         return redirect('mailings:mailing_detail', pk=pk)
 
 

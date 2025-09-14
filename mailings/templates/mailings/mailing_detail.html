@@ -23,6 +23,7 @@
         </ul>
     </div>
     <div class="card-footer text-end">
+        <a href="{% url 'mailings:mailing_send' object.pk %}" class="btn btn-success">Отправить сейчас</a>
         <a href="{% url 'mailings:mailing_list' %}" class="btn btn-secondary">Назад к списку</a>
     </div>
 </div>
