@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <h2 class="text-center">Редактирование профиля</h2>
+        <p class="text-center text-muted">Здесь вы можете обновить свои данные.</p>
+        <hr>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Отображаем аватара если он имеется -->
+            {% if form.instance.avatar %}
+            <div class="mb-3 text-center">
+                <img src="{{ form.instance.avatar.url }}" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover;" alt="Текущий аватар">
+            </div>
+            {% endif %}
+
+            {{ form.as_p }}
+
+            <button type="submit" class="btn btn-primary w-100 mt-3">Сохранить изменения</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

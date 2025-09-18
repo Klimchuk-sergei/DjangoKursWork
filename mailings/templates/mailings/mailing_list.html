@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h2">Рассылки</h1>
+    <a href="{% url 'mailings:mailing_create' %}" class="btn btn-primary">Создать рассылку</a>
+</div>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead><tr><th>Тема</th><th>Статус</th><th>Время старта</th><th>Время окончания</th><th>Действия</th></tr></thead>
+        <tbody>
+            {% for object in object_list %}
+            <tr>
+                <td>{{ object.message.subject }}</td>
+                <td>{{ object.get_status_display }}</td>
+                <td>{{ object.start_time|date:"d.m.Y H:i" }}</td>
+                <td>{{ object.end_time|date:"d.m.Y H:i" }}</td>
+                <td>
+                    <a href="{% url 'mailings:mailing_detail' object.pk %}" class="btn btn-sm btn-info">Просмотр</a>
+                    {% if object.owner == user %}
+                        <a href="{% url 'mailings:mailing_update' object.pk %}" class="btn btn-sm btn-warning">Изменить</a>
+                        <a href="{% url 'mailings:mailing_delete' object.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+                        <a href="{% url 'mailings:mailing_logs' object.pk %}" class="btn btn-sm btn-outline-info">Отчет</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center">Вы еще не создали ни одной рассылки.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

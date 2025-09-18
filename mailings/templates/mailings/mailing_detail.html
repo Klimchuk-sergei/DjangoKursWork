@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1 class="h2 mb-3">Рассылка: {{ object.message.subject }}</h1>
+<div class="card">
+    <div class="card-body">
+        <p><strong>Статус:</strong> {{ object.get_status_display }}</p>
+        <p><strong>Время начала:</strong> {{ object.start_time }}</p>
+        <p><strong>Время окончания:</strong> {{ object.end_time }}</p>
+        <hr>
+        <p><strong>Сообщение:</strong></p>
+        <div class="card bg-light p-3">
+            <h5>{{ object.message.subject }}</h5>
+            <p>{{ object.message.body|linebreaks }}</p>
+        </div>
+        <hr>
+        <p><strong>Получатели:</strong></p>
+        <ul>
+            {% for client in object.clients.all %}
+                <li>{{ client.full_name }} ({{ client.email }})</li>
+            {% empty %}
+                <li>Нет выбранных получателей.</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="card-footer text-end">
+        <a href="{% url 'mailings:mailing_send' object.pk %}" class="btn btn-success">Отправить сейчас</a>
+        <a href="{% url 'mailings:mailing_list' %}" class="btn btn-secondary">Назад к списку</a>
+    </div>
+</div>
+{% endblock %}
